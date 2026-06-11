@@ -50,7 +50,6 @@ services:
       - --metrics=0.0.0.0:${EL_METRICS_PORT:-9001}
       - --enable-arc-rpc
       - --rpc.forwarder=${EL_UPSTREAM_RPC}
-      - ${EL_EXTRAS}
     labels:
       - traefik.enable=true
       - traefik.http.routers.${RPC_HOST:-arc}.service=${RPC_HOST:-arc}
@@ -94,7 +93,6 @@ services:
       - --follow.endpoint=${CL_UPSTREAM_ENDPOINT_2}
       - --follow.endpoint=${CL_UPSTREAM_ENDPOINT_3}
       - --metrics=0.0.0.0:${CL_METRICS_PORT:-29000}
-      - ${CL_EXTRAS}
     depends_on:
       arc-execution:
         condition: service_started
