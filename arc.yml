@@ -1,0 +1,106 @@
+x-logging: &logging
+  logging:
+    driver: json-file
+    options:
+      max-size: 100m
+      max-file: "3"
+      tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
+
+services:
+  arc-snapshots:
+    restart: "no"
+    image: ${ARC_EXECUTION_IMAGE}
+    user: root
+    volumes:
+      - arc-data:/data
+    entrypoint: arc-snapshots
+    command:
+      - download
+      - --execution-path=/data/execution
+      - --consensus-path=/data/consensus
+      - --execution-url=${EXECUTION_SNAPSHOT_URL}
+      - --consensus-url=${CONSENSUS_SNAPSHOT_URL}
+    <<: *logging
+
+  arc-execution:
+    restart: "unless-stopped"
+    image: ${ARC_EXECUTION_IMAGE}
+    user: "999:999"
+    stop_grace_period: 5m
+    volumes:
+      - arc-data:/data
+      - arc-ipc:/run/arc
+    environment:
+      - RUST_LOG=${LOG_LEVEL:-info}
+    command:
+      - node
+      - --chain=arc-mainnet
+      - --datadir=/data/execution
+      - --disable-discovery
+      - --ipcpath=/run/arc/reth.ipc
+      - --auth-ipc
+      - --auth-ipc.path=/run/arc/auth.ipc
+      - --http
+      - --http.addr=0.0.0.0
+      - --http.port=${EL_RPC_PORT:-8545}
+      - --http.api=eth,net,web3,txpool,trace,debug
+      - --ws
+      - --ws.addr=0.0.0.0
+      - --ws.port=${EL_WS_PORT:-8546}
+      - --ws.api=eth,net,web3,txpool
+      - --metrics=0.0.0.0:${EL_METRICS_PORT:-9001}
+      - --enable-arc-rpc
+      - --rpc.forwarder=${EL_UPSTREAM_RPC}
+      - ${EL_EXTRAS}
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.${RPC_HOST:-arc}.service=${RPC_HOST:-arc}
+      - traefik.http.routers.${RPC_HOST:-arc}.entrypoints=websecure
+      - traefik.http.routers.${RPC_HOST:-arc}.rule=Host(`${RPC_HOST:-arc}.${DOMAIN}`)
+      - traefik.http.routers.${RPC_HOST:-arc}.tls.certresolver=letsencrypt
+      - traefik.http.routers.${RPC_HOST:-arc}lb.service=${RPC_HOST:-arc}
+      - traefik.http.routers.${RPC_HOST:-arc}lb.entrypoints=websecure
+      - traefik.http.routers.${RPC_HOST:-arc}lb.rule=Host(`${RPC_LB:-arc-lb}.${DOMAIN}`)
+      - traefik.http.routers.${RPC_HOST:-arc}lb.tls.certresolver=letsencrypt
+      - traefik.http.services.${RPC_HOST:-arc}.loadbalancer.server.port=${EL_RPC_PORT:-8545}
+      - traefik.http.routers.${WS_HOST:-arcws}.service=${WS_HOST:-arcws}
+      - traefik.http.routers.${WS_HOST:-arcws}.entrypoints=websecure
+      - traefik.http.routers.${WS_HOST:-arcws}.rule=Host(`${WS_HOST:-arcws}.${DOMAIN}`)
+      - traefik.http.routers.${WS_HOST:-arcws}.tls.certresolver=letsencrypt
+      - traefik.http.routers.${WS_HOST:-arcws}lb.service=${WS_HOST:-arcws}
+      - traefik.http.routers.${WS_HOST:-arcws}lb.entrypoints=websecure
+      - traefik.http.routers.${WS_HOST:-arcws}lb.rule=Host(`${WS_LB:-arcws-lb}.${DOMAIN}`)
+      - traefik.http.routers.${WS_HOST:-arcws}lb.tls.certresolver=letsencrypt
+      - traefik.http.services.${WS_HOST:-arcws}.loadbalancer.server.port=${EL_WS_PORT:-8546}
+    <<: *logging
+
+  arc-consensus:
+    restart: "unless-stopped"
+    image: ${ARC_CONSENSUS_IMAGE}
+    user: "999:999"
+    stop_grace_period: 5m
+    volumes:
+      - arc-data:/data
+      - arc-ipc:/run/arc
+    environment:
+      - RUST_LOG=${LOG_LEVEL:-info}
+    command:
+      - start
+      - --home=/data/consensus
+      - --eth-socket=/run/arc/reth.ipc
+      - --execution-socket=/run/arc/auth.ipc
+      - --rpc.addr=0.0.0.0:${CL_RPC_PORT:-31000}
+      - --follow
+      - --follow.endpoint=${CL_UPSTREAM_ENDPOINT_1}
+      - --follow.endpoint=${CL_UPSTREAM_ENDPOINT_2}
+      - --follow.endpoint=${CL_UPSTREAM_ENDPOINT_3}
+      - --metrics=0.0.0.0:${CL_METRICS_PORT:-29000}
+      - ${CL_EXTRAS}
+    depends_on:
+      arc:
+        condition: service_started
+    <<: *logging
+
+volumes:
+  arc-data:
+  arc-ipc:
