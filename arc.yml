@@ -20,17 +20,6 @@ services:
       - --execution-url=${EXECUTION_SNAPSHOT_URL}
       - --consensus-url=${CONSENSUS_SNAPSHOT_URL}
     <<: *logging
-  
-  arc-init:
-      restart: "no"
-      image: ${ARC_CONSENSUS_IMAGE}
-      user: "999:999"
-      volumes:
-        - arc-data:/data
-      command:
-        - init
-        - --home=/data/consensus
-      <<: *logging
 
   arc-execution:
     restart: "unless-stopped"
@@ -107,8 +96,6 @@ services:
     depends_on:
       arc-execution:
         condition: service_started
-      arc-init:
-        condition: service_completed_successfully
     <<: *logging
 
 volumes:
