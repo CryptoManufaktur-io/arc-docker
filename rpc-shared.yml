@@ -7,7 +7,7 @@
 # =============================================================================
 
 services:
-  arc:
+  arc-execution:
     ports:
       - ${SHARE_IP:-}${EL_RPC_PORT:-8545}:${EL_RPC_PORT:-8545}
       - ${SHARE_IP:-}${EL_WS_PORT:-8546}:${EL_WS_PORT:-8546}
