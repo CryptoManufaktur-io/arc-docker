@@ -10,7 +10,6 @@ services:
   arc-snapshots:
     restart: "no"
     image: ${ARC_EXECUTION_IMAGE}
-    user: root
     volumes:
       - arc-data:/data
     entrypoint: arc-snapshots
