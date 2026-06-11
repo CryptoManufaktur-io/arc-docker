@@ -32,8 +32,19 @@ docker run --rm -v arc_arc-ipc:/run/arc alpine chown -R 999:999 /run/arc
 
 `./arcd up`
 
-On first start, monitor the snapshot download with `./arcd logs -f arc-snapshots`.
-Once snapshots and init are complete, `arc-execution` and `arc-consensus` will start automatically.
+Monitor the snapshot download:
+
+```bash
+./arcd logs -f arc-snapshots
+```
+
+Once snapshots are complete, generate the consensus key (one-time, first deployment only):
+
+```bash
+docker run --rm -v arc_arc-data:/data docker.cloudsmith.io/circle/arc-network/arc-consensus:0.7.2 init --home=/data/consensus
+```
+
+`arc-execution` and `arc-consensus` will then start syncing automatically.
 
 ## Verify the node
 
