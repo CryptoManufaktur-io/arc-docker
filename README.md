@@ -49,5 +49,4 @@ To update the software, run `./arcd update` and then `./arcd up`
 If you use it, add it to `COMPOSE_FILE` in `.env`.
 
 ## Version
-
 This is Arc Docker v1.0.0
