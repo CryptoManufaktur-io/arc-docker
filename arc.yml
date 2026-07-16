@@ -26,6 +26,9 @@ services:
     image: ${ARC_EXECUTION_IMAGE}
     user: "999:999"
     stop_grace_period: 5m
+    depends_on:
+      arc-snapshots:
+        condition: service_completed_successfully
     volumes:
       - arc-data:/data
       - arc-ipc:/run/arc
