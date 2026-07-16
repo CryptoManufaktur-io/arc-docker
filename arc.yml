@@ -7,6 +7,19 @@ x-logging: &logging
       tag: '{{.ImageName}}|{{.Name}}|{{.ImageFullID}}|{{.FullID}}'
 
 services:
+  arc-permissions:
+    restart: "no"
+    image: alpine:3.21
+    user: root
+    volumes:
+      - arc-data:/data
+      - arc-ipc:/run/arc
+    entrypoint: sh
+    command:
+      - -c
+      - chown -R 999:999 /data /run/arc
+    <<: *logging
+
   arc-snapshots:
     restart: "no"
     image: ${ARC_EXECUTION_IMAGE}
@@ -19,6 +32,9 @@ services:
       - --consensus-path=/data/consensus
       - --execution-url=${EXECUTION_SNAPSHOT_URL}
       - --consensus-url=${CONSENSUS_SNAPSHOT_URL}
+    depends_on:
+      arc-permissions:
+        condition: service_completed_successfully
     <<: *logging
 
   arc-init:

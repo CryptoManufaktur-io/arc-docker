@@ -23,14 +23,9 @@ See the Jira ticket comment for which endpoint to use for `EL_UPSTREAM_RPC`.
 
 The `CL_UPSTREAM_ENDPOINT` values must use the format `https://...,wss=hostname/path` — note `wss=` without `://`.
 
-On first start, fix volume permissions before bringing the node up:
-
-```bash
-docker run --rm -v arc_arc-data:/data alpine chown -R 999:999 /data
-docker run --rm -v arc_arc-ipc:/run/arc alpine chown -R 999:999 /run/arc
-```
-
 `./arcd up`
+
+Volume permissions are fixed automatically by the `arc-permissions` service before anything else runs.
 
 Monitor the snapshot download:
 
