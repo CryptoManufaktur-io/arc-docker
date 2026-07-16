@@ -38,13 +38,8 @@ Monitor the snapshot download:
 ./arcd logs -f arc-snapshots
 ```
 
-Once snapshots are complete, generate the consensus key (one-time, first deployment only):
-
-```bash
-docker run --rm -v arc_arc-data:/data docker.cloudsmith.io/circle/arc-network/arc-consensus:0.7.2 init --home=/data/consensus
-```
-
-`arc-execution` and `arc-consensus` will then start syncing automatically.
+Once snapshots are complete, `arc-init` generates the consensus key automatically (safe to run on every
+`up` — it skips if the key already exists), then `arc-execution` and `arc-consensus` start syncing automatically.
 
 ## Verify the node
 
