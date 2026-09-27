@@ -8,20 +8,23 @@ and Prometheus remote write; use `:ext-network.yml` in `COMPOSE_FILE` inside `.e
 
 If you want the RPC ports exposed locally, use `rpc-shared.yml` in `COMPOSE_FILE` inside `.env`.
 
-> **Note:** Arc Mainnet is currently in a private phase. All full nodes must be configured with trusted
-> upstream RPC URLs provided by Chainlink Labs via a 1Password email note. Syncing from genesis is not
-> supported; snapshots are mandatory.
+> **Note:** Arc Mainnet is public. Non-validator nodes only run in follow mode (P2P discovery disabled):
+> consensus fetches blocks from `CL_UPSTREAM_ENDPOINT_1/2/3` and execution forwards every submitted
+> transaction to `EL_UPSTREAM_RPC`. If that upstream is down, the node still syncs but cannot send
+> transactions. `default.env` ships the official public endpoints.
 
 ## Quick Start
 
 `cp default.env .env`
 
-`nano .env` and adjust variables as needed, particularly `EL_UPSTREAM_RPC` and
-`CL_UPSTREAM_ENDPOINT_1/2/3` from the 1Password note sent by Chainlink Labs.
-
-See the Jira ticket comment for which endpoint to use for `EL_UPSTREAM_RPC`.
+`nano .env` and adjust variables as needed. The default upstreams are the official public endpoints;
+swap in a provider endpoint if you need higher rate limits.
 
 The `CL_UPSTREAM_ENDPOINT` values must use the format `https://...,wss=hostname/path` — note `wss=` without `://`.
+
+Snapshots are only needed for the first bootstrap. Set `EXECUTION_SNAPSHOT_URL`/`CONSENSUS_SNAPSHOT_URL`
+to download them; leave them empty to skip `arc-snapshots` and `arc-init` and start from existing data.
+Clear them after the initial sync, since snapshot links expire and an expired link blocks `up`.
 
 `./arcd up`
 
@@ -33,7 +36,7 @@ Monitor the snapshot download:
 ./arcd logs -f arc-snapshots
 ```
 
-Once snapshots are complete, `arc-init` generates the consensus key automatically (safe to run on every
+Once snapshots are complete (when snapshot URLs are set), `arc-init` generates the consensus key automatically (safe to run on every
 `up` — it skips if the key already exists), then `arc-execution` and `arc-consensus` start syncing automatically.
 
 ## Verify the node

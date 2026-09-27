@@ -20,8 +20,12 @@ services:
       - chown -R 999:999 /data /run/arc
     <<: *logging
 
+  # arc-snapshots and arc-init only run when EXECUTION_SNAPSHOT_URL is set (and COMPOSE_PROFILES
+  # includes "snapshot", as in default.env). With an empty URL the profile resolves to "" and both
+  # services are skipped, so execution and consensus start straight from the existing data.
   arc-snapshots:
     restart: "no"
+    profiles: ["${EXECUTION_SNAPSHOT_URL:+snapshot}"]
     image: ${ARC_EXECUTION_IMAGE}
     volumes:
       - arc-data:/data
@@ -39,6 +43,7 @@ services:
 
   arc-init:
     restart: "no"
+    profiles: ["${EXECUTION_SNAPSHOT_URL:+snapshot}"]
     image: ${ARC_CONSENSUS_IMAGE}
     user: "999:999"
     volumes:
@@ -57,8 +62,11 @@ services:
     user: "999:999"
     stop_grace_period: 5m
     depends_on:
+      arc-permissions:
+        condition: service_completed_successfully
       arc-snapshots:
         condition: service_completed_successfully
+        required: false
     volumes:
       - arc-data:/data
       - arc-ipc:/run/arc
@@ -131,6 +139,7 @@ services:
         condition: service_started
       arc-init:
         condition: service_completed_successfully
+        required: false
     <<: *logging
 
 volumes:
