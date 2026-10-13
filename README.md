@@ -48,6 +48,13 @@ curl -H "content-type: application/json" localhost:8545 \
   -d '{"jsonrpc":"2.0","id":1,"method":"eth_blockNumber","params":[]}'
 ```
 
+## Metrics
+
+Both clients serve Prometheus metrics on `/metrics`: `arc-execution` on `EL_METRICS_PORT` (default 9001) and
+`arc-consensus` on `CL_METRICS_PORT` (default 29000). The ports are not published to the host; `arc.yml` adds the
+`metrics.*` labels the central-proxy-docker Prometheus uses to discover them, so keep `ext-network.yml` in
+`COMPOSE_FILE` (the container must be on the Traefik network for the scrape to reach it).
+
 ## Software update
 
 To update the software, run `./arcd update` and then `./arcd up`

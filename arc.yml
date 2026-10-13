@@ -113,6 +113,11 @@ services:
       - traefik.http.routers.${WS_HOST:-arcws}lb.rule=Host(`${WS_LB:-arcws-lb}.${DOMAIN}`)
       - traefik.http.routers.${WS_HOST:-arcws}lb.tls.certresolver=letsencrypt
       - traefik.http.services.${WS_HOST:-arcws}.loadbalancer.server.port=${EL_WS_PORT:-8546}
+      - metrics.scrape=true
+      - metrics.path=/metrics
+      - metrics.port=${EL_METRICS_PORT:-9001}
+      - metrics.instance=arc-execution
+      - metrics.network=mainnet
     <<: *logging
 
   arc-consensus:
@@ -125,6 +130,12 @@ services:
       - arc-ipc:/run/arc
     environment:
       - RUST_LOG=${LOG_LEVEL:-info}
+    labels:
+      - metrics.scrape=true
+      - metrics.path=/metrics
+      - metrics.port=${CL_METRICS_PORT:-29000}
+      - metrics.instance=arc-consensus
+      - metrics.network=mainnet
     command:
       - start
       - --home=/data/consensus
