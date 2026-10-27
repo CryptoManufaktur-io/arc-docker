@@ -55,6 +55,12 @@ Both clients serve Prometheus metrics on `/metrics`: `arc-execution` on `EL_METR
 `metrics.*` labels the central-proxy-docker Prometheus uses to discover them, so keep `ext-network.yml` in
 `COMPOSE_FILE` (the container must be on the Traefik network for the scrape to reach it).
 
+## Public RPC namespaces
+
+The public HTTP API serves `eth`, `net`, `web3`, `txpool` and `trace`; `debug` is not enabled by default. To enable it, set `HTTP_API`
+in your `.env` to the full list including `debug`, e.g. `HTTP_API=eth,net,web3,txpool,trace,debug`, then run `./arcd up`; no tracked
+file needs editing.
+
 ## Software update
 
 To update the software, run `./arcd update` and then `./arcd up`
