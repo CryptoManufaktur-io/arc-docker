@@ -85,7 +85,7 @@ services:
       - --http
       - --http.addr=0.0.0.0
       - --http.port=${EL_RPC_PORT:-8545}
-      - --http.api=eth,net,web3,txpool,trace,debug
+      - --http.api=eth,net,web3,txpool,trace
       - --ws
       - --ws.addr=0.0.0.0
       - --ws.port=${EL_WS_PORT:-8546}
